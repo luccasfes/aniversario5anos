@@ -1,3 +1,17 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyBYpbdlWGL1TuUER_li_VImoiNwoWq1Ss8",
+  authDomain: "sarah-lucas-5anos.firebaseapp.com",
+  projectId: "sarah-lucas-5anos",
+  storageBucket: "sarah-lucas-5anos.firebasestorage.app",
+  messagingSenderId: "88165556060",
+  appId: "1:88165556060:web:0b7a0ea66d9ea9c4ba2b99",
+  measurementId: "G-RY6KN2TET0"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 // ==========================================
 // CONFIGURAÇÕES GERAIS E SAVE STATE
 // ==========================================
@@ -15,7 +29,6 @@ let currentYear = 2021;
 let currentQuestionIndex = 0;
 let errorsInCurrentQuestion = 0;
 
-// O Banco de Perguntas
 const quizDatabase = {
     2021: [
         { q: "Qual o nome da série do nosso primeiro beijo?", opts: ["Todas as Mulheres do Mundo", "Friends", "Big Bang Theory", "Vis a Vis"], ans: 0, fb: "Exato! Inesquecível." },
@@ -62,23 +75,8 @@ function saveState() { localStorage.setItem('sarah5AnosProgress', JSON.stringify
 window.onload = () => {
     setTimeout(() => { document.getElementById('loader').style.opacity = '0'; setTimeout(()=>document.getElementById('loader').style.display='none', 1000); }, 2000);
     
-    // Se a cápsula já foi vencida, revela os cupons
-    if(gameProgress.vaultUnlocked) {
-        document.getElementById('capsule-locked-view').style.display = 'none';
-        document.getElementById('capsule-open-view').style.display = 'block';
-        
-        const couponsSec = document.getElementById('coupons');
-        const navCoupons = document.getElementById('nav-coupons');
-        if(couponsSec) couponsSec.style.display = 'block';
-        if(navCoupons) navCoupons.style.display = 'inline-block';
-
-        if(gameProgress.capsuleMessage) {
-            document.getElementById('capsuleMessage').value = gameProgress.capsuleMessage;
-            document.getElementById('capsuleMessage').disabled = true;
-            document.querySelector('#capsule-open-view .capsule-btn').style.display = 'none';
-            document.getElementById('capsuleConfirmation').style.display = 'block';
-        }
-    }
+    // VERIFICA SE A CÁPSULA ESTÁ NO FIREBASE
+    verificarCapsulaNoFirebase();
 
     createHearts(); updateCounter(); setInterval(updateCounter, 60000);
     
@@ -92,6 +90,72 @@ window.onload = () => {
     const obs = new IntersectionObserver((entries) => { entries.forEach(e => { if(e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }}); }, { threshold: 0.1 });
     document.querySelectorAll('.slide-in').forEach(el => obs.observe(el));
 };
+
+// ==========================================
+// LÓGICA DO FIREBASE (CÁPSULA 2031)
+// ==========================================
+async function verificarCapsulaNoFirebase() {
+    try {
+        const docRef = await db.collection("timecapsule").doc("sarah_lucas").get();
+        
+        if (docRef.exists || gameProgress.vaultUnlocked) {
+            const couponsSec = document.getElementById('coupons');
+            const navCoupons = document.getElementById('nav-coupons');
+            if(couponsSec) couponsSec.style.display = 'block';
+            if(navCoupons) navCoupons.style.display = 'inline-block';
+
+            document.getElementById('capsule-locked-view').style.display = 'none';
+            document.getElementById('capsule-snake-view').style.display = 'none';
+            document.getElementById('capsule-open-view').style.display = 'block';
+
+            if (docRef.exists) {
+                const data = docRef.data();
+                const anoAtual = new Date().getFullYear();
+
+                if (anoAtual >= 2031) {
+                    document.getElementById('capsuleMessage').value = data.mensagem;
+                    document.getElementById('capsuleMessage').disabled = true;
+                    document.querySelector('#capsule-open-view .capsule-btn').style.display = 'none';
+                    
+                    document.getElementById('capsuleConfirmation').innerHTML = `✨ Cápsula Aberta! Escrita em ${data.dataSelada} ✨`;
+                    document.getElementById('capsuleConfirmation').style.display = 'block';
+                    launchConfetti();
+                } else {
+                    document.getElementById('capsuleMessage').style.display = 'none';
+                    document.querySelector('#capsule-open-view .capsule-btn').style.display = 'none';
+                    
+                    document.getElementById('capsuleConfirmation').innerHTML = `📦 Cápsula selada com sucesso em ${data.dataSelada}!<br><br><span style="color:#fae4e9;">O seu Urso Pardo guardou a mensagem a sete chaves no banco de dados. Voltem a este site em <b>2031</b> para descobrir o que está escrito.</span>`;
+                    document.getElementById('capsuleConfirmation').style.display = 'block';
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao verificar cápsula:", error);
+    }
+}
+
+async function saveCapsule() {
+    const msg = document.getElementById('capsuleMessage').value.trim();
+    if(msg) {
+        try {
+            const dataHoje = new Date().toLocaleDateString('pt-BR');
+            await db.collection("timecapsule").doc("sarah_lucas").set({
+                mensagem: msg,
+                dataSelada: dataHoje,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            showToast("📦 Cápsula selada para a eternidade (2031)!");
+            verificarCapsulaNoFirebase();
+            
+        } catch (error) {
+            console.error("Erro ao salvar:", error);
+            showToast("Erro ao conectar com o banco de dados.");
+        }
+    } else {
+        showToast("Escreva algo bonito primeiro!");
+    }
+}
 
 function createHearts() {
     const c = document.getElementById('floatingHearts');
@@ -110,9 +174,6 @@ function updateCounter() {
     document.getElementById('minutesCounter').textContent = Math.floor((diff % 3600000) / 60000);
 }
 
-// ==========================================
-// SISTEMA DO QUIZ 
-// ==========================================
 function updateQuizUI() {
     document.querySelectorAll('.year-btn').forEach(btn => {
         const y = parseInt(btn.dataset.year);
@@ -203,9 +264,6 @@ function advanceQuestion() {
     } else loadQuestion();
 }
 
-// ==========================================
-// COFRE E COBRINHA
-// ==========================================
 function checkVaultPassword() {
     if(document.getElementById('vault-input').value.toUpperCase().trim() === FINAL_PASSWORD) {
         document.getElementById('vault-error').style.display = 'none';
@@ -238,6 +296,9 @@ function initSnakeGame() {
 
     const canvas = document.getElementById("snake-game"); const ctx = canvas.getContext("2d");
     const box = 20; let snake = [{x: 5*box, y: 5*box}]; snakeDir = "RIGHT"; 
+    
+    // A MÁGICA DA VELOCIDADE AQUI: Começa em 250ms (mais lento)
+    let snakeSpeed = 250; 
     
     const mems = [ 
         { e: '🍕', m: '1º Ano: A celebrar o nosso 1º aniversário a comer Pizza.' }, 
@@ -285,19 +346,16 @@ function initSnakeGame() {
                 memIdx++;
                 if(memIdx >= mems.length) {
                     gameProgress.vaultUnlocked = true; saveState();
-                    document.getElementById('capsule-snake-view').style.display = 'none';
-                    document.getElementById('capsule-open-view').style.display = 'block';
-                    
-                    const couponsSec = document.getElementById('coupons');
-                    const navCoupons = document.getElementById('nav-coupons');
-                    if(couponsSec) couponsSec.style.display = 'block';
-                    if(navCoupons) navCoupons.style.display = 'inline-block';
-
+                    verificarCapsulaNoFirebase();
                     launchConfetti(); showToast("Cápsula e Cupons Desbloqueados!");
                 } else {
                     food = { x: Math.floor(Math.random()*14)*box, y: Math.floor(Math.random()*14)*box, item: mems[memIdx] };
                     snake.unshift({x: nx, y: ny});
-                    gameLoop = setInterval(runGame, 150);
+                    
+                    // Aumenta a velocidade do jogo toda vez que come um item! (Diminui 50ms)
+                    snakeSpeed = snakeSpeed - 50; 
+                    
+                    gameLoop = setInterval(runGame, snakeSpeed);
                 }
             }, 3000);
         } else {
@@ -310,23 +368,9 @@ function initSnakeGame() {
             }
         }
     }
-    gameLoop = setInterval(runGame, 150);
+    gameLoop = setInterval(runGame, snakeSpeed);
 }
 
-function saveCapsule() {
-    const msg = document.getElementById('capsuleMessage').value.trim();
-    if(msg) {
-        gameProgress.capsuleMessage = msg; saveState();
-        document.getElementById('capsuleConfirmation').style.display = 'block';
-        document.getElementById('capsuleMessage').disabled = true;
-        document.querySelector('#capsule-open-view .capsule-btn').style.display = 'none';
-        showToast("📦 Cápsula selada para 2031!");
-    } else showToast("Escreve algo bonito primeiro!");
-}
-
-// ==========================================
-// MÚSICA FIXA 
-// ==========================================
 function togglePlay() {
     const audioEl = document.getElementById('audio-player');
     const disc = document.getElementById('music-disc');
@@ -343,9 +387,6 @@ function toggleMute() { const a = document.getElementById('audio-player'); a.mut
 document.getElementById('audio-player').ontimeupdate = function() { if(this.duration) document.getElementById('music-progress').style.width = (this.currentTime/this.duration)*100 + '%'; };
 function seekMusic(e) { const a = document.getElementById('audio-player'); if(a.duration) a.currentTime = (e.offsetX / e.currentTarget.offsetWidth) * a.duration; }
 
-// ==========================================
-// LIGHTBOX (MISTO DE FOTO E VÍDEO)
-// ==========================================
 function openLightbox(src, isVideo) {
     const lb = document.getElementById('lightbox');
     const img = document.getElementById('lightbox-img');
@@ -353,13 +394,13 @@ function openLightbox(src, isVideo) {
 
     if(isVideo) {
         img.style.display = 'none';
-        vid.style.display = 'block'; // Mostra o vídeo
+        vid.style.display = 'block';
         vid.src = src;
         vid.play().catch(e => console.log("Erro ao tocar vídeo:", e));
     } else {
         vid.style.display = 'none';
         vid.pause();
-        img.style.display = 'block'; // Mostra a imagem
+        img.style.display = 'block';
         img.src = src;
     }
     lb.classList.add('open');
@@ -368,37 +409,23 @@ function openLightbox(src, isVideo) {
 function closeLightbox() {
     document.getElementById('lightbox').classList.remove('open');
     const vid = document.getElementById('lightbox-video');
-    if(vid) vid.pause(); // Pausa o vídeo quando fecha o modal
+    if(vid) vid.pause();
 }
 
-// ==========================================
-// CALENDÁRIO COM MODAL INTERATIVO E MEMÓRIAS
-// ==========================================
-let calYear = 2026, calMonth = 1; // 1 = Fevereiro
-
-// "y: 'all'" significa que repete todos os anos. Os outros têm o ano exato.
+let calYear = 2026, calMonth = 1; 
 const specialDates = [ 
-    // DATAS ANUAIS (Repetem sempre)
     { y: 'all', m: 1, d: 12, name: '🎂 Aniversário do Meu Amor', note: 'O dia da mulher da minha vida.', desc: 'Um dia incrível e o meu favorito, porque foi quando você nasceu. Amo-te muito!', icon: '🎂' },
     { y: 'all', m: 12, d: 11, name: '✨ 11 de Dezembro', note: 'Data especial.', desc: 'Você fez com que esta data se tornasse bem mais especial do que era antes de te conhecer.', icon: '✨' },
     { y: 'all', m: 12, d: 25, name: '🎄 Natal', note: 'O nosso favorito.', desc: 'Um dia maravilhoso e incrível, o nosso favorito do ano.', icon: '🎄' },
-
-    // 2021
     { y: 2021, m: 2, d: 22, name: '💝 O Início de Tudo', note: 'Onde a nossa história começou.', desc: 'A data que nunca vou esquecer. O dia oficial do nosso início.', icon: '💝' },
     { y: 2021, m: 3, d: 22, name: '🍕 1 Mês (Escondido)', note: 'Ninguém sabia de nada!', desc: 'Comemos pizza para comemorar um mês escondidos e me deste uma caixinha muito linda. Tantas memórias!', icon: '🎁' },
-
-    // 2022
     { y: 2022, m: 9, d: 11, name: '🍓 Festa do Morango', note: 'Passeio incrível.', desc: 'Fomos à Festa do Morango e foi bom demais.', icon: '🍓' },
     { y: 2022, m: 9, d: 22, name: '⛺ Cabana na Sala', note: 'Simples e único.', desc: 'Fizemos uma cabana em casa, compramos pizza e assistimos a uma série. Um momento tão simples, mas maravilhoso.', icon: '⛺' },
     { y: 2022, m: 10, d: 22, name: '🌻 Exposição do Van Gogh', note: 'A melhor até hoje.', desc: 'Imersiva, agradável, linda, sensacional. Não sei explicar o quão bom foi.', icon: '🎨' },
-
-    // 2023
     { y: 2023, m: 1, d: 22, name: '📸 Eduardo e Mônica', note: 'Fotos no Museu.', desc: 'Saímos, fomos ao museu e tiramos fotos igual Eduardo e Mônica no Teatro Nacional.', icon: '🏛️' },
     { y: 2023, m: 2, d: 22, name: '🏡 2 Anos no Chalé', note: 'O nosso segundo aniversário.', desc: 'Comemoramos o nosso segundo aniversário de namoro num chalé perfeito.', icon: '🏡' },
     { y: 2023, m: 6, d: 16, name: '💡 Concerto das Luzes', note: 'Um dos melhores.', desc: 'Um concerto tão agradável. Tinha umas luzes que você até queria roubar (pegar emprestado para sempre!).', icon: '✨' },
     { y: 2023, m: 10, d: 7, name: '🍧 Açaí e Conversa', note: 'No Fluo do Açaí.', desc: 'Tomamos açaí à noite. Uma conversa tão agradável, um momento mágico e divertido.', icon: '🍧' },
-
-    // 2024
     { y: 2024, m: 2, d: 22, name: '🥰 Surpresa dos 3 Anos', note: '3 anos juntos.', desc: 'Fizeste uma surpresa para mim com o meu nome. O que é legal, porque hoje já completamos cinco!', icon: '🎉' },
     { y: 2024, m: 2, d: 24, name: '🍣 Salmão no Airbnb', note: 'Taguatinga.', desc: 'Comemoramos comendo salmão num apartamento no Airbnb.', icon: '🍣' },
     { y: 2024, m: 3, d: 29, name: '🍇 Imersão no CCBB', note: 'Piquenique perfeito.', desc: 'Comemos biscoito, bolo, amendoim, uva e um suquinho de laranja que você trouxe.', icon: '🧺' },
@@ -407,8 +434,6 @@ const specialDates = [
     { y: 2024, m: 8, d: 4, name: '🍔 Reencontro na Hamburgueria', note: 'Volta de viagem.', desc: 'Voltei de viagem e foi um dia tão bom. Estava muito feliz por te ver de novo.', icon: '🍔' },
     { y: 2024, m: 9, d: 14, name: '🎬 Ainda Estou Aqui', note: 'Cinema.', desc: 'Assistimos ao filme da Fernanda Torres que ganhou Oscar. Muito bom.', icon: '🍿' },
     { y: 2024, m: 11, d: 16, name: '🍝 Airbnb em Samambaia', note: 'Um dos melhores.', desc: 'Lasanha gostosa e uma taça de vinho. Foi um dos melhores momentos para mim.', icon: '🍷' },
-
-    // 2025
     { y: 2025, m: 1, d: 13, name: '🛣️ Viagem a Luziânia', note: 'Goiás.', desc: 'Foi especial porque saí da tecnologia e estive mais um momento com você.', icon: '📵' },
     { y: 2025, m: 2, d: 1, name: '🗾 Exposição do Japão', note: 'Pátio Brasil.', desc: 'Fomos à Exposição do Japão no shopping.', icon: '⛩️' },
     { y: 2025, m: 2, d: 15, name: '⛵ Passeio de Barco', note: 'Dia incrível.', desc: 'Um passeio de barco inesquecível a dois.', icon: '🌊' },
@@ -416,8 +441,6 @@ const specialDates = [
     { y: 2025, m: 4, d: 18, name: '🏢 Airbnb no SIA', note: 'Em Brasília.', desc: 'Aproveitamos um tempo juntos naquele apartamento perto do SIA.', icon: '🏙️' },
     { y: 2025, m: 6, d: 22, name: '🎸 Concerto de Sertanejos', note: 'Muita música.', desc: 'Fomos ao concerto curtir juntos.', icon: '🤠' },
     { y: 2025, m: 7, d: 15, name: '🧳 Viagem a Pirenópolis', note: 'Aventura a dois.', desc: 'Exploramos Pirenópolis. Você me ensinou a ser melhor e a explorar o novo.', icon: '🗺️' },
-
-    // 2026
     { y: 2026, m: 2, d: 14, name: '🚗 Viagem para Goiânia', note: 'Novas histórias.', desc: 'Pegamos a estrada rumo a Goiânia para criar mais memórias.', icon: '🛣️' },
     { y: 2026, m: 2, d: 22, name: '👑 5 Anos de Namoro!', note: 'A Patroa da minha vida.', desc: 'Hoje completamos 5 anos. O Urso Pardo te ama mais do que tudo no universo.', icon: '🐻' }
 ];
@@ -432,9 +455,7 @@ function buildCalendar() {
     for(let i=0; i<fDay; i++) grid.innerHTML += `<div class="cal-day empty"></div>`;
     
     for(let d=1; d<=days; d++) { 
-        // Verifica se é uma data do ano atual OU uma data anual (y: 'all')
         let isSp = specialDates.some(s => (s.y === calYear || s.y === 'all') && s.m === calMonth+1 && s.d === d); 
-        
         if(isSp) {
             grid.innerHTML += `<div class="cal-day special" onclick="openCalendarModal(${calYear}, ${calMonth+1}, ${d})">${d}</div>`;
         } else {
@@ -451,27 +472,19 @@ function changeMonth(dir) {
 }
 
 function openCalendarModal(year, month, day) {
-    // Busca a data exata do ano ou a data anual
     const ev = specialDates.find(s => (s.y === year || s.y === 'all') && s.m === month && s.d === day);
     if(ev) {
         document.getElementById('cal-modal-icon').textContent = ev.icon;
         document.getElementById('cal-modal-title').textContent = ev.name;
         const mNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-        
-        // Se for evento que repete (anual), não mostra o ano no modal, apenas o dia e mês
         let displayYear = ev.y === 'all' ? '(Todos os anos)' : ev.y;
         document.getElementById('cal-modal-date').textContent = `${ev.d} de ${mNames[ev.m-1]} ${displayYear}`;
-        
         document.getElementById('cal-modal-desc').textContent = ev.desc;
         document.getElementById('calendar-modal').style.display = 'flex';
     }
 }
 function closeCalendarModal() { document.getElementById('calendar-modal').style.display = 'none'; }
 
-
-// ==========================================
-// EFEITOS (Confetti, Toasts)
-// ==========================================
 function showToast(text) { const t = document.getElementById('toast'); t.textContent = text; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
 
 function launchConfetti() {
@@ -489,27 +502,57 @@ function launchConfetti() {
     }
     animConf();
 }
+
 // ==========================================
-// ÁUDIO DA CARTA
+// ÁUDIO DA CARTA (COM FUNDO MUSICAL)
 // ==========================================
 function toggleLetterAudio() {
-    const audio = document.getElementById('letter-audio');
+    const letterAudio = document.getElementById('letter-audio');
+    const letterBgMusic = document.getElementById('letter-bg-music'); // Puxa o toque bonitinho
     const btn = document.getElementById('btn-play-letter');
     
-    if(audio.paused) {
-        audio.play();
+    // Puxa os elementos da música principal (a que toca no rádio)
+    const bgMusic = document.getElementById('audio-player');
+    const bgMusicBtn = document.getElementById('play-pause-btn');
+    const disc = document.getElementById('music-disc');
+
+    if(letterAudio.paused) {
+        // 1. Pausa a música principal do site (se estiver a tocar)
+        if (!bgMusic.paused) {
+            bgMusic.pause();
+            bgMusicBtn.textContent = '▶'; 
+            disc.classList.remove('spinning'); 
+        }
+
+        // 2. Configura o volume do toque bonitinho bem baixo (15%) e dá play
+        letterBgMusic.volume = 0.05; // Você pode mudar de 0.1 (muito baixo) a 0.5 (metade)
+        letterBgMusic.play();
+
+        // 3. Toca a sua voz
+        letterAudio.play();
+        
         btn.innerHTML = '⏸ Pausar áudio';
         btn.style.background = 'rgba(255, 153, 170, 0.3)';
     } else {
-        audio.pause();
+        // Se clicar em pausar, pausa a sua voz e a musiquinha fofa
+        letterAudio.pause();
+        letterBgMusic.pause();
+        
         btn.innerHTML = '▶ Ouvir a minha voz';
         btn.style.background = 'rgba(255, 153, 170, 0.1)';
     }
 }
 
-// Quando o áudio da carta terminar, o botão volta ao normal
+// Quando o áudio da carta (sua voz) terminar...
 document.getElementById('letter-audio').onended = () => {
     const btn = document.getElementById('btn-play-letter');
+    const letterBgMusic = document.getElementById('letter-bg-music');
+    
+    // Pausa a musiquinha fofa e volta ela para o começo
+    letterBgMusic.pause();
+    letterBgMusic.currentTime = 0;
+
+    // Volta o botão ao normal
     btn.innerHTML = '▶ Ouvir a minha voz';
     btn.style.background = 'rgba(255, 153, 170, 0.1)';
 };

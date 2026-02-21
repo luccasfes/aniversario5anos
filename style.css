@@ -70,7 +70,6 @@ body {
     }
 }
 
-/* Loader */
 #loader {
     position: fixed;
     top: 0;
@@ -109,7 +108,6 @@ body {
     margin: 0 5px;
 }
 
-/* Nav */
 nav {
     position: fixed;
     top: 0;
@@ -157,7 +155,6 @@ nav {
     color: #ffb6c1;
 }
 
-/* Hero */
 .hero {
     height: 100vh;
     position: relative;
@@ -247,7 +244,6 @@ nav {
     margin-top: 5px;
 }
 
-/* Secções */
 section {
     padding: 100px 40px;
     position: relative;
@@ -282,7 +278,6 @@ section {
     font-style: italic;
 }
 
-/* Quiz */
 .quiz-container {
     background: rgba(255, 182, 193, 0.05);
     border-radius: 30px;
@@ -424,15 +419,16 @@ section {
     font-weight: bold;
 }
 
-/* Cápsula & Cofre */
 .capsule {
     text-align: center;
     max-width: 650px;
     margin: 0 auto;
-    padding: 60px;
+    padding: 40px 20px;
     background: linear-gradient(135deg, rgba(255, 182, 193, 0.1), rgba(255, 153, 170, 0.05));
     border-radius: 30px;
     border: 2px dashed #ff99aa;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .capsule-icon {
@@ -453,6 +449,7 @@ section {
     margin: 20px 0;
     outline: none;
     transition: 0.3s;
+    box-sizing: border-box;
 }
 
 .capsule-textarea:focus {
@@ -477,7 +474,6 @@ section {
     box-shadow: 0 0 20px rgba(255, 153, 170, 0.4);
 }
 
-/* Jogo da Cobrinha Premium */
 .snake-wrapper {
     position: relative;
     display: inline-block;
@@ -486,12 +482,17 @@ section {
     border-radius: 20px;
     border: 1px solid rgba(255, 182, 193, 0.2);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 #snake-game {
     background: #120a0c;
     border-radius: 12px;
     display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
 }
 
 .memory-bar-wrap {
@@ -510,7 +511,6 @@ section {
     transition: width 0.05s linear;
 }
 
-/* Controlos D-PAD (Mobile) */
 .d-pad {
     margin-top: 25px;
     display: grid;
@@ -545,7 +545,6 @@ section {
     border-radius: 50%;
 }
 
-/* Galeria de Fotos e Vídeos */
 .gallery-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -598,66 +597,65 @@ section {
 }
 
 /* =========================================
-   LIGHTBOX (MODAL GRANDE PARA FOTOS E VÍDEOS)
+   LIGHTBOX (MODAL GRANDE PARA FOTOS E VÍDEOS) - MÁGICA DA TELA CHEIA
    ========================================= */
-.lightbox { 
-    display: none; 
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100vw; 
-    height: 100vh; 
-    background: rgba(13, 5, 8, 0.98); 
-    z-index: 99999; 
-    justify-content: center; 
-    align-items: center; 
-    backdrop-filter: blur(10px); 
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(13, 5, 8, 0.98);
+    z-index: 99999;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
 }
 
-.lightbox.open { 
-    display: flex; 
-    animation: fadeIn 0.3s ease; 
+.lightbox.open {
+    display: flex;
+    animation: fadeIn 0.3s ease;
 }
 
-/* A MÁGICA DA TELA CHEIA ACONTECE AQUI */
-.lightbox img, 
-.lightbox video { 
-    width: 100%; /* Força a ocupar a largura */
-    height: 100%; /* Força a ocupar a altura */
-    max-width: 90vw; /* Mas não deixa passar dos limites da tela */
-    max-height: 85vh; 
-    border-radius: 15px; 
-    box-shadow: 0 0 50px rgba(255, 153, 170, 0.3); 
-    outline: none; 
-    object-fit: contain; /* Ajusta sem cortar nem achatar */
+/* FORÇANDO O VÍDEO A CRESCER */
+.lightbox img,
+.lightbox video {
+    width: 90vw !important;
+    height: 85vh !important;
+    object-fit: contain !important;
+    /* Ajusta na proporção correta sem cortar */
+    border-radius: 15px;
+    box-shadow: 0 0 50px rgba(255, 153, 170, 0.3);
+    outline: none;
+    display: block;
 }
 
-.lightbox-close { 
-    position: absolute; 
-    top: 25px; 
-    right: 35px; 
-    font-size: 40px; 
-    color: #ffb6c1; 
-    background: rgba(26, 15, 18, 0.5); 
-    border: none; 
+.lightbox-close {
+    position: absolute;
+    top: 25px;
+    right: 35px;
+    font-size: 40px;
+    color: #ffb6c1;
+    background: rgba(26, 15, 18, 0.5);
+    border: none;
     border-radius: 50%;
     width: 60px;
     height: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer; 
-    transition: 0.3s ease; 
-    z-index: 100000; 
+    cursor: pointer;
+    transition: 0.3s ease;
+    z-index: 100000;
 }
 
-.lightbox-close:hover { 
-    color: #ff5e5e; 
-    transform: scale(1.1); 
+.lightbox-close:hover {
+    color: #ff5e5e;
+    transform: scale(1.1);
     background: rgba(26, 15, 18, 0.8);
 }
 
-/* Timeline e Carta */
 .timeline {
     position: relative;
     margin-top: 60px;
@@ -762,7 +760,6 @@ footer {
     margin-bottom: 15px;
 }
 
-/* Calendário e Modal Datas */
 .cal-day-header {
     font-size: 12px;
     color: #888;
@@ -822,7 +819,6 @@ footer {
     box-shadow: 0 10px 40px rgba(255, 153, 170, 0.2);
 }
 
-/* Cupons (Tickets) */
 .ticket-wrapper {
     display: flex;
     flex-direction: column;
@@ -908,7 +904,6 @@ footer {
     line-height: 1.5;
 }
 
-/* Toast */
 .toast {
     position: fixed;
     bottom: 40px;
@@ -929,35 +924,15 @@ footer {
     transform: translateX(-50%) translateY(0);
 }
 
-/* Animações Auxiliares */
-.slide-in {
-    animation: slideIn 1s ease-out forwards;
-    opacity: 0;
-}
-
-.delay-1 {
-    animation-delay: 0.2s;
-}
-
-.delay-2 {
-    animation-delay: 0.4s;
-}
-
-.delay-3 {
-    animation-delay: 0.6s;
-}
-
-.delay-4 {
-    animation-delay: 0.8s;
-}
-
-/* Responsivo */
 @media (min-width: 768px) {
     .d-pad {
         display: none !important;
     }
 }
 
+/* =========================================
+   AJUSTES PARA TELEMÓVEL (MOBILE)
+   ========================================= */
 @media (max-width: 768px) {
     .nav-links {
         display: none;
@@ -983,6 +958,44 @@ footer {
         font-size: 40px;
     }
 
+    /* Correção do Quiz "Espremido" */
+    .quiz-header {
+        flex-direction: column;
+        /* Coloca os corações embaixo dos anos */
+        align-items: center;
+        gap: 15px;
+    }
+
+    .quiz-years {
+        justify-content: center;
+        flex-wrap: wrap;
+        /* Permite que os botões quebrem linha se a tela for minúscula */
+        gap: 8px;
+    }
+
+    .year-btn {
+        width: 45px;
+        /* Bolinhas menores no telemóvel */
+        height: 45px;
+        font-size: 16px;
+    }
+
+    /* Correção do Game Over da Cobrinha e Container */
+    .capsule {
+        padding: 30px 15px;
+        overflow: hidden;
+    }
+
+    .snake-wrapper {
+        padding: 5px;
+    }
+
+    #snake-gameover h3 {
+        font-size: 20px !important;
+        /* Diminui a fonte do Game Over para caber na tela */
+        padding: 0 10px;
+    }
+
     .timeline::before {
         left: 30px;
     }
@@ -1002,10 +1015,6 @@ footer {
 
     .quiz-container {
         padding: 30px 20px;
-    }
-
-    .quiz-years {
-        justify-content: center;
     }
 
     .letter {

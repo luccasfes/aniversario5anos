@@ -208,7 +208,8 @@
                     <button class="music-btn" onclick="toggleMute()"
                         style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">🔊</button>
                 </div>
-                <audio id="audio-player" src="assets/musica.mp3" loop></audio>
+                <audio id="audio-player" src="assets/audio/Cazuza - Exagerado (Áudio Oficial) - Cazuza.mp3"
+                    loop></audio>
             </div>
 
             <div class="gallery-grid" id="galleryGrid">
@@ -231,16 +232,16 @@
                     <img src="assets/img/fotoseis.jpg" alt="Memória 6" />
                 </div>
 
-                <div class="gallery-item video-item" onclick="openLightbox('assets/img/video1.mp4', true)">
-                    <video src="assets/img/video1.mp4" muted loop playsinline></video>
+                <div class="gallery-item video-item" onclick="openLightbox('assets/video/video1.mp4', true)">
+                    <video src="assets/video/video1.mp4" muted loop playsinline></video>
                     <div class="play-icon">▶</div>
                 </div>
-                <div class="gallery-item video-item" onclick="openLightbox('assets/img/video2.mp4', true)">
-                    <video src="assets/img/video2.mp4" muted loop playsinline></video>
+                <div class="gallery-item video-item" onclick="openLightbox('assets/video/video2.mp4', true)">
+                    <video src="assets/video/video2.mp4" muted loop playsinline></video>
                     <div class="play-icon">▶</div>
                 </div>
-                <div class="gallery-item video-item" onclick="openLightbox('assets/img/video3.mp4', true)">
-                    <video src="assets/img/video3.mp4" muted loop playsinline></video>
+                <div class="gallery-item video-item" onclick="openLightbox('assets/video/video3.mp4', true)">
+                    <video src="assets/video/video3.mp4" muted loop playsinline></video>
                     <div class="play-icon">▶</div>
                 </div>
             </div>
@@ -250,7 +251,7 @@
     <section id="timeline">
         <div class="section-container">
             <div class="section-tag slide-in">✦ LINHA DO TEMPO ✦</div>
-            <h2 class="section-title slide-in delay-1">5 anos, <em>5 capítulos</em></h2>
+            <h2 class="section-title slide-in delay-1">A nossa <em>História</em></h2>
             <div class="timeline">
                 <div class="timeline-item slide-in">
                     <div class="timeline-content">
@@ -340,6 +341,7 @@
                         ▶ Ouvir a minha voz
                     </button>
                     <audio id="letter-audio" src="assets/audio/audio de carta.mp4"></audio>
+                    <audio id="letter-bg-music" src="assets/audio/musicaFundo2.mp3" loop></audio>
                 </div>
 
                 Meu amor,<br><br>
@@ -434,14 +436,16 @@
     </div>
 
     <footer>
-        <div class="footer-hearts">❤️ 🐻 ❤️</div>
+        <div class="footer-hearts">❤️ 🐻🐼 ❤️</div>
         <div class="footer-text">"Não é o tempo que importa, mas sim o que fazemos com ele"</div>
-        <div style="color: #998086; margin-top: 30px; font-size: 12px; letter-spacing: 2px;">DESENVOLVIDO COM AMOR POR
-            LUCAS • 2021 - 2026</div>
+        <div style="color: #998086; margin-top: 30px; font-size: 12px; letter-spacing: 2px;">DESENVOLVIDO COM AMOR PARA A MELHOR NAMORADA DO MUNDO. FEITO POR
+            LUCAS</div>
     </footer>
 
     <div class="toast" id="toast">✨ Mensagem ✨</div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="app.js"></script>
 </body>
 
